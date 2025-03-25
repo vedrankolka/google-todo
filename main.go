@@ -48,6 +48,7 @@ func main() {
 
 	taskLists, err := srv.Tasklists.List().Do()
 	if err != nil {
+		// TODO: when token expiry is checked proprely, this can be removed.
 		if !strings.Contains(err.Error(), "oauth2: token expired") {
 			log.Fatalf("unable to get task lists: %v", err)
 		}

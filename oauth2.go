@@ -86,6 +86,7 @@ func loadCachedToken(file string) (*oauth2.Token, error) {
 	defer f.Close()
 	tok := &oauth2.Token{}
 	err = json.NewDecoder(f).Decode(tok)
+	// TODO: check if tkoen is expired.
 	return tok, err
 }
 
