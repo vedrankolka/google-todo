@@ -17,7 +17,7 @@ import (
 func makeOauthClient(config *oauth2.Config) *http.Client {
 	tokFile := "token.json"
 	tok, err := loadCachedToken(tokFile)
-	if err != nil {
+	if err != nil || !tok.Valid() {
 		tok = getTokenFromWeb(config)
 		saveCachedToken(tokFile, tok)
 	}
@@ -86,7 +86,6 @@ func loadCachedToken(file string) (*oauth2.Token, error) {
 	defer f.Close()
 	tok := &oauth2.Token{}
 	err = json.NewDecoder(f).Decode(tok)
-	// TODO: check if tkoen is expired.
 	return tok, err
 }
 
@@ -94,10 +93,11 @@ func loadCachedToken(file string) (*oauth2.Token, error) {
 func saveCachedToken(path string, token *oauth2.Token) {
 	fmt.Printf("Saving token to: %s\n", path)
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	defer f.Close()
 	if err != nil {
 		log.Fatalf("unable to cache OAuth token: %v", err)
 	}
+	defer f.Close()
+
 	json.NewEncoder(f).Encode(token)
 }
 
