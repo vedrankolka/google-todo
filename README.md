@@ -1,16 +1,15 @@
 # google-todo
 A tiny CLI for creating Google tasks.
 
+## Install
+
+```sh
+go install github.com/vedrankolka/google-todo@latest
+```
+
 ## Run
 
 ```sh
 todo review security vulnerabilities
 todo --list Shopping eggs
 ```
-
-## TODO
-
--[x] Improve auth flow by opening browser
--[x] Improve auth flow by responding with message
--[x] Improve configuration
--[ ] Add needed stuff for go install
