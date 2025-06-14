@@ -14,12 +14,11 @@ import (
 
 // makeOauthClient creates a new http.Client with oauth2 set up from the
 // given config.
-func makeOauthClient(config *oauth2.Config) *http.Client {
-	tokFile := "token.json"
-	tok, err := loadCachedToken(tokFile)
+func makeOauthClient(config *oauth2.Config, tokenPath string) *http.Client {
+	tok, err := loadCachedToken(tokenPath)
 	if err != nil || !tok.Valid() {
 		tok = getTokenFromWeb(config)
-		saveCachedToken(tokFile, tok)
+		saveCachedToken(tokenPath, tok)
 	}
 	return config.Client(context.Background(), tok)
 }
@@ -46,7 +45,7 @@ func authenticateUser(config *oauth2.Config) string {
 		mux.HandleFunc(redirectPath, func(w http.ResponseWriter, req *http.Request) {
 			codeChan <- req.URL.Query().Get("code")
 			w.Header().Set("Content-Type", "text/plain")
-			fmt.Fprintln(w, "Authenticated! You can now close this page.")
+			fmt.Fprintln(w, "<h3>Authenticated! You can now close this page.</h3>")
 		})
 		srv.Handler = mux
 		if err := srv.Serve(listener); err != http.ErrServerClosed {
@@ -55,7 +54,6 @@ func authenticateUser(config *oauth2.Config) string {
 	}()
 
 	config.RedirectURL = fmt.Sprintf("http://localhost:%d%s", port, redirectPath)
-	fmt.Println(config.RedirectURL)
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	fmt.Println("Click this link to authenticate:\n", authURL)
 
@@ -91,7 +89,6 @@ func loadCachedToken(file string) (*oauth2.Token, error) {
 
 // saveCachedToken saves an oauth2 token to a local file.
 func saveCachedToken(path string, token *oauth2.Token) {
-	fmt.Printf("Saving token to: %s\n", path)
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		log.Fatalf("unable to cache OAuth token: %v", err)
@@ -102,7 +99,6 @@ func saveCachedToken(path string, token *oauth2.Token) {
 }
 
 func deleteCachedToken(path string) {
-	fmt.Printf("Deleting token from: %s\n", path)
 	err := os.Remove(path)
 	if err != nil {
 		log.Fatalf("unable to delete cached OAuth token: %v", err)
